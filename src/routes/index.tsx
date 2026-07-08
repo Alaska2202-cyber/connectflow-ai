@@ -10,6 +10,12 @@ import {
   Zap,
   ArrowRight,
   Check,
+  Database,
+  RefreshCcw,
+  Package,
+  UserCog,
+  Plug,
+  ShieldCheck,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
@@ -36,6 +42,7 @@ function Landing() {
       <Trust />
       <Features />
       <HowItWorks />
+      <SystemActions />
       <Integrations />
       <Pricing />
       <CTA />
@@ -198,6 +205,97 @@ function HowItWorks() {
               )}
             </div>
           ))}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function SystemActions() {
+  const actions = [
+    {
+      icon: RefreshCcw,
+      title: "Process refunds",
+      body: "POST to Stripe, Square or your billing API when a customer qualifies — with policy checks, caps and an audit trail.",
+      code: `POST /v1/refunds\n{ "charge": "ch_3P…", "amount": 4200 }`,
+    },
+    {
+      icon: Package,
+      title: "Check inventory",
+      body: "Query Shopify, Lightspeed or a custom warehouse REST endpoint before promising availability to a caller.",
+      code: `GET /inventory?sku=OAT-MILK-32\n→ { "on_hand": 14, "eta": "2d" }`,
+    },
+    {
+      icon: UserCog,
+      title: "Update accounts",
+      body: "Patch customer records, loyalty tiers, contact info or subscription plans directly in your source of truth.",
+      code: `PATCH /customers/cus_9k2\n{ "tier": "vip", "notes": "…" }`,
+    },
+    {
+      icon: Database,
+      title: "Read from your DB",
+      body: "Order history, past visits, allergy notes, open tickets — fetched live so the AI answers with your real data.",
+      code: `GET /orders?customer=cus_9k2\n&limit=5&status=open`,
+    },
+  ];
+  return (
+    <div className="border-y border-border/60 bg-surface/30">
+      <Section id="system-actions" className="py-24">
+        <SectionHeader
+          eyebrow="System integrations"
+          title="Give the AI the keys to your backend — safely."
+          subtitle="Connect Relay to any REST API and let it take real action: process refunds, check inventory, update accounts and query your database, all with scoped credentials and full audit logs."
+        />
+        <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-start">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {actions.map((a) => (
+              <div
+                key={a.title}
+                className="rounded-2xl border border-border bg-background/50 p-6 transition hover:border-primary/40"
+              >
+                <a.icon className="h-5 w-5 text-primary-glow" />
+                <h3 className="mt-4 text-base font-semibold">{a.title}</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">{a.body}</p>
+                <pre className="mt-4 overflow-x-auto rounded-md border border-border/70 bg-background/70 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+{a.code}
+                </pre>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/50 p-6">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+              <Plug className="h-4 w-4" /> How it works
+            </div>
+            <h3 className="mt-2 text-xl font-semibold">One connector, any REST endpoint.</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Point Relay at your OpenAPI spec or describe an endpoint. We generate a typed tool
+              the AI can call mid-conversation, gated by policies you define.
+            </p>
+
+            <ol className="mt-6 space-y-4 text-sm">
+              {[
+                { t: "Register the endpoint", d: "Paste a URL or upload an OpenAPI schema. Auth via API key, OAuth or signed JWT." },
+                { t: "Define guardrails", d: "Refund caps, allow-lists, business-hours, human approval for high-risk actions." },
+                { t: "AI calls it when relevant", d: "Every call is logged with request, response, latency and the reasoning trace." },
+              ].map((s, i) => (
+                <li key={s.t} className="flex gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[11px] font-semibold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <div className="font-medium">{s.t}</div>
+                    <div className="text-muted-foreground">{s.d}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-6 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs text-success">
+              <ShieldCheck className="h-4 w-4" />
+              Scoped credentials, PII redaction, and per-action audit log — on by default.
+            </div>
+          </div>
         </div>
       </Section>
     </div>
