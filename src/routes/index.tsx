@@ -16,6 +16,13 @@ import {
   UserCog,
   Plug,
   ShieldCheck,
+  UserRoundCheck,
+  FileText,
+  ClipboardList,
+  BookOpen,
+  AlertTriangle,
+  GitPullRequestArrow,
+  BrainCircuit,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
