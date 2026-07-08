@@ -81,7 +81,7 @@ function SideRail({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
             { i: MessageSquare, l: "SMS" },
             { i: Phone, l: "WhatsApp" },
             { i: Mail, l: "Email" },
-            { i: Instagram, l: "Instagram" },
+            { i: AtSign, l: "Instagram" },
           ].map((c) => (
             <div key={c.l} className="flex items-center gap-3 rounded-md px-3 py-2 text-xs text-muted-foreground hover:bg-sidebar-accent hover:text-foreground">
               <c.i className="h-3.5 w-3.5" />
