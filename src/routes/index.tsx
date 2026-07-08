@@ -10,6 +10,12 @@ import {
   Zap,
   ArrowRight,
   Check,
+  Database,
+  RefreshCcw,
+  Package,
+  UserCog,
+  Plug,
+  ShieldCheck,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
