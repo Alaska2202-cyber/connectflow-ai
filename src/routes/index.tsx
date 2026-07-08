@@ -42,6 +42,7 @@ function Landing() {
       <Trust />
       <Features />
       <HowItWorks />
+      <SystemActions />
       <Integrations />
       <Pricing />
       <CTA />
