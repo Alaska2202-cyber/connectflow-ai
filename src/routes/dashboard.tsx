@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Inbox, CalendarCheck, PhoneMissed, Sparkles, Send, Search, Filter,
-  Star, Phone, MessageSquare, Mail, Instagram, Paperclip, Smile,
+  Star, Phone, MessageSquare, Mail, AtSign, Paperclip, Smile,
   Users, TrendingUp, Clock, CheckCircle2, ChevronRight,
 } from "lucide-react";
 import { Logo } from "@/components/SiteChrome";
