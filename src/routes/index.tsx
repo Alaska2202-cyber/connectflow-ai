@@ -50,6 +50,8 @@ function Landing() {
       <Features />
       <HowItWorks />
       <SystemActions />
+      <HumanHandoff />
+      <KnowledgeAutomation />
       <Integrations />
       <Pricing />
       <CTA />
