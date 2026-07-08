@@ -439,6 +439,257 @@ function CTA() {
   );
 }
 
+function HumanHandoff() {
+  return (
+    <Section id="handoff" className="py-24">
+      <SectionHeader
+        eyebrow="Seamless human handoff"
+        title="When the AI steps aside, your team catches the customer mid-sentence."
+        subtitle="No 'can you repeat that?' — agents inherit the full conversation, a plain-English summary, and every CRM detail the AI just pulled."
+      />
+      <div className="mt-12 grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:items-start">
+        {/* Handoff card preview */}
+        <div className="rounded-2xl border border-border bg-surface/70 p-5 shadow-elevated">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+            <div className="flex items-center gap-2">
+              <GitPullRequestArrow className="h-4 w-4 text-primary-glow" />
+              <span className="text-sm font-semibold">Handoff requested → Priya (Support)</span>
+            </div>
+            <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
+              Sentiment dropping · 0.31
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-border/60 bg-background/50 p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <FileText className="h-3.5 w-3.5" /> AI summary
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+                Marcus (VIP, 4 prior visits) booked a table for 6 tonight at 7pm but wants to
+                move to Friday and add a highchair. AI offered Friday 7:15pm — customer went
+                quiet, then asked for a manager.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                <Tag>Reschedule</Tag>
+                <Tag>VIP</Tag>
+                <Tag>Escalation</Tag>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-background/50 p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <ClipboardList className="h-3.5 w-3.5" /> CRM context (HubSpot)
+              </div>
+              <dl className="mt-2 space-y-1.5 text-xs">
+                <Row k="Lifetime spend" v="$1,842" />
+                <Row k="Last visit" v="Mar 14 · 8pm" />
+                <Row k="Allergies" v="Shellfish" />
+                <Row k="Loyalty tier" v="Gold" />
+                <Row k="Open tickets" v="0" />
+              </dl>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-primary/30 bg-primary/10 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium text-primary-glow">
+              <UserRoundCheck className="h-3.5 w-3.5" /> Suggested next step for the agent
+            </div>
+            <p className="text-sm text-foreground/90">
+              Offer Friday 7:15pm with highchair + comp dessert (Marcus is Gold, no recent
+              comp). Reply-ready draft loaded in your composer.
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button className="inline-flex items-center gap-1.5 rounded-md bg-gradient-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-glow">
+              Take over
+            </button>
+            <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/50 px-3 py-1.5 text-xs font-medium hover:bg-background">
+              Send draft
+            </button>
+            <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/50 px-3 py-1.5 text-xs font-medium hover:bg-background">
+              Return to AI
+            </button>
+          </div>
+        </div>
+
+        {/* Feature bullets */}
+        <div className="space-y-4">
+          {[
+            {
+              icon: FileText,
+              t: "Full conversation summary",
+              d: "Every handoff arrives with a plain-English recap, sentiment trend, entities extracted, and the exact reason the AI escalated.",
+            },
+            {
+              icon: ClipboardList,
+              t: "CRM context, pre-loaded",
+              d: "Lifetime value, past visits, open tickets, notes and preferences pulled from HubSpot, Salesforce or Pipedrive — before the agent clicks reply.",
+            },
+            {
+              icon: UserRoundCheck,
+              t: "Warm transfer, not a cold drop",
+              d: "Customer sees a brief 'connecting you with Priya' message. The agent inherits a suggested reply and can send in one click.",
+            },
+            {
+              icon: GitPullRequestArrow,
+              t: "Return to AI, anytime",
+              d: "Agents can hand the thread back for booking confirmations, follow-ups or after-hours — with a note the AI reads in.",
+            },
+          ].map((f) => (
+            <div key={f.t} className="flex gap-4 rounded-2xl border border-border bg-surface/60 p-5">
+              <f.icon className="h-5 w-5 shrink-0 text-primary-glow" />
+              <div>
+                <div className="text-sm font-semibold">{f.t}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{f.d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <dt className="text-muted-foreground">{k}</dt>
+      <dd className="font-medium text-foreground/90">{v}</dd>
+    </div>
+  );
+}
+
+function Tag({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+      {children}
+    </span>
+  );
+}
+
+function KnowledgeAutomation() {
+  const gaps = [
+    {
+      q: "Do you have gluten-free pasta options?",
+      count: 12,
+      confidence: 0.24,
+      status: "Needs answer",
+      channel: "SMS · Webchat",
+    },
+    {
+      q: "What's your policy on service dogs on the patio?",
+      count: 5,
+      confidence: 0.41,
+      status: "Draft ready",
+      channel: "WhatsApp",
+    },
+    {
+      q: "Can I reschedule a birthday package within 24h?",
+      count: 8,
+      confidence: 0.36,
+      status: "Assigned · Priya",
+      channel: "SMS",
+    },
+  ];
+  return (
+    <div className="border-y border-border/60 bg-surface/30">
+      <Section id="knowledge" className="py-24">
+        <SectionHeader
+          eyebrow="Knowledge automation"
+          title="Your AI tells you what it doesn't know."
+          subtitle="Relay clusters every low-confidence answer and unanswered question, then routes the gap to the right teammate so your knowledge base gets sharper every week."
+        />
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+          <div className="space-y-4">
+            {[
+              {
+                icon: BrainCircuit,
+                t: "Auto-detect low confidence",
+                d: "Every AI reply is scored. When confidence drops or the customer rephrases, the exchange is captured as a candidate knowledge gap.",
+              },
+              {
+                icon: AlertTriangle,
+                t: "Cluster & prioritise",
+                d: "Similar questions are grouped so you see 'asked 12 times this week' instead of 12 duplicate tickets.",
+              },
+              {
+                icon: BookOpen,
+                t: "Human writes once, AI learns forever",
+                d: "Your team publishes an answer to the knowledge base. Relay picks it up automatically — no retraining, no engineering.",
+              },
+            ].map((f) => (
+              <div key={f.t} className="flex gap-4 rounded-2xl border border-border bg-background/40 p-5">
+                <f.icon className="h-5 w-5 shrink-0 text-primary-glow" />
+                <div>
+                  <div className="text-sm font-semibold">{f.t}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{f.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/50 shadow-elevated">
+            <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                Knowledge gaps · this week
+              </div>
+              <span className="text-[11px] text-muted-foreground">25 detected · 3 highlighted</span>
+            </div>
+            <ul className="divide-y divide-border/60">
+              {gaps.map((g) => (
+                <li key={g.q} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">"{g.q}"</div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                        <span>Asked <strong className="text-foreground/80">{g.count}×</strong></span>
+                        <span>· AI confidence {(g.confidence * 100).toFixed(0)}%</span>
+                        <span>· {g.channel}</span>
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        g.status === "Needs answer"
+                          ? "bg-destructive/15 text-destructive"
+                          : g.status === "Draft ready"
+                          ? "bg-warning/15 text-warning"
+                          : "bg-success/15 text-success"
+                      }`}
+                    >
+                      {g.status}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/60 px-2.5 py-1 text-[11px] font-medium hover:bg-surface">
+                      <BookOpen className="h-3 w-3" /> Add to knowledge base
+                    </button>
+                    <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/60 px-2.5 py-1 text-[11px] font-medium hover:bg-surface">
+                      Assign
+                    </button>
+                    <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/60 px-2.5 py-1 text-[11px] font-medium hover:bg-surface">
+                      View 12 threads
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-between border-t border-border/60 px-5 py-3 text-[11px] text-muted-foreground">
+              <span>Auto-synced to Notion, Guru & Zendesk Help Center</span>
+              <span className="inline-flex items-center gap-1.5 text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> Learning live
+              </span>
+            </div>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 function SectionHeader({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
