@@ -23,6 +23,12 @@ import {
   AlertTriangle,
   GitPullRequestArrow,
   BrainCircuit,
+  ClipboardCheck,
+  Gauge,
+  Scale,
+  Mic2,
+  Palette,
+  HeartHandshake,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
@@ -52,6 +58,8 @@ function Landing() {
       <SystemActions />
       <HumanHandoff />
       <KnowledgeAutomation />
+      <QualityAssurance />
+      <BrandVoice />
       <Integrations />
       <Pricing />
       <CTA />
@@ -688,6 +696,219 @@ function KnowledgeAutomation() {
       </Section>
     </div>
   );
+}
+
+function QualityAssurance() {
+  const rubric = [
+    { label: "Policy compliance", score: 98, tone: "success" as const, note: "Refund cap respected · disclosures sent" },
+    { label: "Resolution", score: 92, tone: "success" as const, note: "Customer confirmed booking rescheduled" },
+    { label: "Tone & empathy", score: 84, tone: "success" as const, note: "Warm, acknowledged frustration early" },
+    { label: "Brand voice", score: 71, tone: "warning" as const, note: "Used 'no worries' — off-brand for Nobu" },
+    { label: "First-response time", score: 100, tone: "success" as const, note: "3s · within SLA" },
+  ];
+  const flagged = [
+    { id: "#4821", who: "Priya P. · webchat", why: "Sentiment dropped mid-thread", score: 62 },
+    { id: "#4790", who: "Marco L. · WhatsApp", why: "Refund issued above policy soft-cap", score: 74 },
+    { id: "#4772", who: "Unknown · SMS", why: "Missed the birthday cue Sarah mentioned", score: 79 },
+  ];
+  return (
+    <div className="border-y border-border/60 bg-surface/30">
+      <Section id="qa" className="py-24">
+        <SectionHeader
+          eyebrow="Automated QA"
+          title="Every conversation, graded. No sampling, no spreadsheets."
+          subtitle="The AI audits its own tickets — and your agents' — for policy compliance, resolution and satisfaction. Managers get a ranked queue of what to review instead of a random 2%."
+        />
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+          {/* scorecard */}
+          <div className="overflow-hidden rounded-2xl border border-border bg-background/50 shadow-elevated">
+            <div className="flex items-center justify-between border-b border-border/70 bg-surface-2/50 px-5 py-3">
+              <div className="flex items-center gap-2 text-sm">
+                <ClipboardCheck className="h-4 w-4 text-primary-glow" />
+                <span className="font-medium">Ticket #4821 · scorecard</span>
+                <span className="text-xs text-muted-foreground">· auto-graded 2s after close</span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
+                <Gauge className="h-3 w-3" /> 89 / 100
+              </span>
+            </div>
+            <div className="divide-y divide-border/60">
+              {rubric.map((r) => (
+                <div key={r.label} className="grid grid-cols-[160px_1fr_auto] items-center gap-4 px-5 py-3">
+                  <div className="text-sm font-medium">{r.label}</div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                    <div
+                      className={`h-full rounded-full ${r.tone === "success" ? "bg-success" : "bg-warning"}`}
+                      style={{ width: `${r.score}%` }}
+                    />
+                  </div>
+                  <div className="text-right text-xs tabular-nums text-muted-foreground">{r.score}</div>
+                  <div className="col-span-3 -mt-1 text-xs text-muted-foreground">{r.note}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-border/70 bg-surface-2/40 px-5 py-3">
+              <div className="text-xs text-muted-foreground">
+                Coaching note drafted for agent · CSAT predicted 4.6 / 5
+              </div>
+              <div className="flex gap-2">
+                <button className="rounded-md border border-border bg-background/60 px-2.5 py-1 text-xs hover:bg-background">Send to agent</button>
+                <button className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90">Approve</button>
+              </div>
+            </div>
+          </div>
+
+          {/* flagged queue */}
+          <div className="rounded-2xl border border-border bg-background/50 p-6">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+              <Scale className="h-4 w-4" /> Manager review queue
+            </div>
+            <h3 className="mt-2 text-xl font-semibold">Only what needs a human eye.</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tickets are ranked by risk, not recency — policy exceptions, sentiment drops and low-confidence answers bubble up first.
+            </p>
+            <ul className="mt-5 space-y-3">
+              {flagged.map((f) => (
+                <li key={f.id} className="rounded-xl border border-border bg-surface/60 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{f.id}</div>
+                    <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning">
+                      {f.score} / 100
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{f.who}</div>
+                  <div className="mt-1.5 text-xs text-foreground/80">{f.why}</div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+              <Stat label="Tickets today" value="1,284" />
+              <Stat label="Auto-graded" value="100%" />
+              <Stat label="Flagged" value="3.2%" />
+            </div>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-surface/50 px-2 py-2">
+      <div className="font-display text-lg font-semibold">{value}</div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
+function BrandVoice() {
+  return (
+    <Section id="voice" className="py-24">
+      <SectionHeader
+        eyebrow="Voice & de-escalation"
+        title="Warm under pressure. On-brand every time."
+        subtitle="Upload your style guide once — Relay mirrors your tone, softens hard moments, and keeps forbidden phrases out of the thread."
+      />
+
+      <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        {/* de-escalation */}
+        <div className="rounded-2xl border border-border bg-background/50 p-6">
+          <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+            <HeartHandshake className="h-4 w-4" /> Difficult moment · handled
+          </div>
+          <div className="mt-4 space-y-3">
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2 text-sm">
+                This is the THIRD time my order is late. I want a full refund and I'm done.
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 rounded bg-destructive/15 px-1.5 py-0.5 text-destructive">
+                Sentiment 0.14 · frustrated
+              </span>
+              <span className="inline-flex items-center gap-1 rounded bg-warning/15 px-1.5 py-0.5 text-warning">
+                De-escalation mode on
+              </span>
+            </div>
+            <div className="flex justify-end">
+              <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-gradient-primary px-3.5 py-2 text-sm text-primary-foreground shadow-glow">
+                Marco, that's on us — three times is three too many. I've refunded tonight's order in full and comped your next delivery. Want me to have the manager, Elena, call you personally in the next 10 minutes?
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px]">
+            <Chip label="Acknowledged" tone="success" />
+            <Chip label="Owned the miss" tone="success" />
+            <Chip label="Offered human" tone="success" />
+          </div>
+        </div>
+
+        {/* brand voice */}
+        <div className="rounded-2xl border border-border bg-background/50 p-6">
+          <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+            <Palette className="h-4 w-4" /> Brand voice · Nobu
+          </div>
+          <h3 className="mt-2 text-lg font-semibold">One style guide, every reply.</h3>
+          <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-lg border border-success/30 bg-success/10 p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-success">On-brand</div>
+              <ul className="mt-1.5 space-y-1 text-foreground/90">
+                <li>"Delighted to reserve that for you."</li>
+                <li>"Our pleasure — see you Saturday."</li>
+                <li>"We'd be honored to host your party."</li>
+              </ul>
+            </div>
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-destructive">Blocked</div>
+              <ul className="mt-1.5 space-y-1 text-muted-foreground line-through">
+                <li>"No worries!"</li>
+                <li>"lol sure thing 👍"</li>
+                <li>"Cheapest option is…"</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-border bg-surface/60 p-4">
+            <div className="flex items-center gap-2 text-xs font-medium">
+              <Mic2 className="h-3.5 w-3.5 text-primary-glow" /> Voice profile
+            </div>
+            <div className="mt-3 space-y-3">
+              {[
+                { label: "Formality", value: 78 },
+                { label: "Warmth", value: 88 },
+                { label: "Concision", value: 64 },
+                { label: "Playfulness", value: 22 },
+              ].map((v) => (
+                <div key={v.label} className="grid grid-cols-[110px_1fr_auto] items-center gap-3">
+                  <div className="text-xs text-muted-foreground">{v.label}</div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                    <div className="h-full rounded-full bg-gradient-primary" style={{ width: `${v.value}%` }} />
+                  </div>
+                  <div className="text-[11px] tabular-nums text-muted-foreground">{v.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-success" />
+            98.6% brand-voice adherence across 12,481 replies this week.
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function Chip({ label, tone }: { label: string; tone: "success" | "warning" | "destructive" }) {
+  const map = {
+    success: "bg-success/15 text-success",
+    warning: "bg-warning/15 text-warning",
+    destructive: "bg-destructive/15 text-destructive",
+  };
+  return <span className={`rounded-full px-2 py-1 font-medium ${map[tone]}`}>{label}</span>;
 }
 
 function SectionHeader({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) {
