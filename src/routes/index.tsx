@@ -29,6 +29,11 @@ import {
   Mic2,
   Palette,
   HeartHandshake,
+  ListChecks,
+  PlayCircle,
+  ShieldAlert,
+  UserCheck,
+  Flag,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
