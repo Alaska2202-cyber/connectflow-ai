@@ -58,6 +58,8 @@ function Landing() {
       <SystemActions />
       <HumanHandoff />
       <KnowledgeAutomation />
+      <QualityAssurance />
+      <BrandVoice />
       <Integrations />
       <Pricing />
       <CTA />
