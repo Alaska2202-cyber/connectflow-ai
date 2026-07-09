@@ -1100,6 +1100,8 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
       </div>
     </div>
   );
+}
+
 
 function Chip({ label, tone }: { label: string; tone: "success" | "warning" | "destructive" }) {
   const map = {
