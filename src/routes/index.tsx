@@ -23,6 +23,12 @@ import {
   AlertTriangle,
   GitPullRequestArrow,
   BrainCircuit,
+  ClipboardCheck,
+  Gauge,
+  Scale,
+  Mic2,
+  Palette,
+  HeartHandshake,
 } from "lucide-react";
 import { SiteHeader, SiteFooter, Section } from "@/components/SiteChrome";
 import { InboxPreview } from "@/components/InboxPreview";
