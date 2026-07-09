@@ -60,6 +60,7 @@ function Landing() {
       <KnowledgeAutomation />
       <QualityAssurance />
       <BrandVoice />
+      <ManagerReview />
       <Integrations />
       <Pricing />
       <CTA />
