@@ -908,6 +908,199 @@ function BrandVoice() {
   );
 }
 
+function ManagerReview() {
+  const deEscSteps = [
+    { icon: <ShieldAlert className="h-4 w-4" />, label: "Detect", detail: "Sentiment < 0.3 or trigger phrase" },
+    { icon: <HeartHandshake className="h-4 w-4" />, label: "Soften", detail: "Acknowledge → own → offer remedy" },
+    { icon: <Flag className="h-4 w-4" />, label: "Guardrail", detail: "Block discounts > $50 without approval" },
+    { icon: <UserCheck className="h-4 w-4" />, label: "Handoff", detail: "Warm transfer to on-call manager" },
+  ];
+
+  const queue = [
+    {
+      id: "REV-2041",
+      customer: "Marco R.",
+      channel: "SMS",
+      reason: "De-escalation used · refund $38",
+      voice: 96,
+      qa: 88,
+      sentiment: "0.14 → 0.71",
+      flag: "Policy check",
+      tone: "warning" as const,
+    },
+    {
+      id: "REV-2039",
+      customer: "Ayesha K.",
+      channel: "Voice",
+      reason: "Off-brand phrase caught mid-call",
+      voice: 71,
+      qa: 74,
+      sentiment: "0.62 → 0.58",
+      flag: "Brand voice",
+      tone: "destructive" as const,
+    },
+    {
+      id: "REV-2036",
+      customer: "The Loft Events",
+      channel: "WhatsApp",
+      reason: "High-value booking · confirm before send",
+      voice: 94,
+      qa: 92,
+      sentiment: "0.88",
+      flag: "Value > $2k",
+      tone: "success" as const,
+    },
+  ];
+
+  const samples = [
+    { label: "Booking confirmations", scored: 214, pass: 98 },
+    { label: "Refund requests", scored: 63, pass: 82 },
+    { label: "Complaint calls", scored: 41, pass: 74 },
+    { label: "Upsell attempts", scored: 88, pass: 91 },
+  ];
+
+  return (
+    <Section id="review" className="py-24">
+      <SectionHeader
+        eyebrow="Manager review queue"
+        title="Enforce voice, de-escalate hard calls, ship with a human safety net."
+        subtitle="Relay grades every sample call against your rubric, routes edge cases to a manager, and only auto-sends when confidence and brand voice both clear the bar."
+      />
+
+      <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+        {/* Review queue */}
+        <div className="rounded-2xl border border-border bg-background/50 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+              <ListChecks className="h-4 w-4" /> Review queue · 7 pending
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="rounded-full bg-surface-2 px-2 py-0.5">Assigned to Elena</span>
+              <span className="rounded-full bg-success/15 px-2 py-0.5 text-success">SLA on track</span>
+            </div>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {queue.map((q) => (
+              <div key={q.id} className="rounded-xl border border-border/70 bg-surface/60 p-4">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-mono text-foreground/80">{q.id}</span>
+                  <span>·</span>
+                  <span className="font-medium text-foreground">{q.customer}</span>
+                  <span className="rounded bg-background/50 px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                    {q.channel}
+                  </span>
+                  <span className="ml-auto">
+                    <Chip label={q.flag} tone={q.tone} />
+                  </span>
+                </div>
+                <div className="mt-2 text-sm text-foreground/90">{q.reason}</div>
+                <div className="mt-3 grid grid-cols-3 gap-3 text-[11px]">
+                  <ScoreBar label="Brand voice" value={q.voice} />
+                  <ScoreBar label="QA score" value={q.qa} />
+                  <div>
+                    <div className="text-muted-foreground">Sentiment</div>
+                    <div className="mt-1 tabular-nums text-foreground/90">{q.sentiment}</div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90">
+                    Approve & send
+                  </button>
+                  <button className="rounded-md border border-border bg-background/40 px-2.5 py-1 text-xs font-medium hover:bg-background/70">
+                    Edit reply
+                  </button>
+                  <button className="rounded-md border border-border bg-background/40 px-2.5 py-1 text-xs font-medium hover:bg-background/70">
+                    Coach agent
+                  </button>
+                  <button className="ml-auto rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive hover:bg-destructive/20">
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right column: de-escalation workflow + sample QA */}
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-border bg-background/50 p-6">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+              <ShieldAlert className="h-4 w-4" /> De-escalation workflow
+            </div>
+            <h3 className="mt-2 text-lg font-semibold">Four steps, every hard moment.</h3>
+            <ol className="mt-4 space-y-3">
+              {deEscSteps.map((s, i) => (
+                <li key={s.label} className="flex items-start gap-3 rounded-lg border border-border/70 bg-surface/60 p-3">
+                  <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary-glow">
+                    {s.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">
+                      <span className="mr-1 text-muted-foreground">{i + 1}.</span>
+                      {s.label}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{s.detail}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-background/50 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
+                <PlayCircle className="h-4 w-4" /> QA on sample calls
+              </div>
+              <span className="text-[11px] text-muted-foreground">Last run · 2m ago</span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {samples.map((s) => (
+                <div key={s.label}>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground/90">{s.label}</span>
+                    <span className="text-muted-foreground">
+                      {s.scored} scored · <span className="tabular-nums text-foreground/90">{s.pass}%</span> pass
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                    <div
+                      className={`h-full rounded-full ${
+                        s.pass >= 90 ? "bg-success" : s.pass >= 80 ? "bg-warning" : "bg-destructive"
+                      }`}
+                      style={{ width: `${s.pass}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex items-center justify-between rounded-lg border border-border/70 bg-surface/60 p-3 text-xs">
+              <span className="text-muted-foreground">406 samples graded this week</span>
+              <button className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1 font-medium text-primary-foreground hover:opacity-90">
+                Run new batch <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const color = value >= 90 ? "bg-success" : value >= 75 ? "bg-warning" : "bg-destructive";
+  return (
+    <div>
+      <div className="flex items-center justify-between text-muted-foreground">
+        <span>{label}</span>
+        <span className="tabular-nums text-foreground/90">{value}</span>
+      </div>
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  );
+
 function Chip({ label, tone }: { label: string; tone: "success" | "warning" | "destructive" }) {
   const map = {
     success: "bg-success/15 text-success",
