@@ -814,8 +814,8 @@ function BrandVoice() {
     <Section id="voice" className="py-24">
       <SectionHeader
         eyebrow="Voice & de-escalation"
-        title="Warm under pressure. On-brand every time."
-        subtitle="Upload your style guide once — Relay mirrors your tone, softens hard moments, and keeps forbidden phrases out of the thread."
+        title="Concise. Formal. On-brand on every call."
+        subtitle="On live calls the agent locks to a professional register — short, formal answers, no filler, no slang — and mirrors your written style guide everywhere else."
       />
 
       <div className="mt-12 grid gap-6 lg:grid-cols-2">
