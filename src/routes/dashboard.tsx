@@ -20,7 +20,7 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-type Tab = "inbox" | "calendar" | "missed";
+type Tab = "inbox" | "calendar" | "missed" | "quality";
 
 function Dashboard() {
   const [tab, setTab] = useState<Tab>("inbox");
@@ -33,6 +33,7 @@ function Dashboard() {
           {tab === "inbox" && <InboxView />}
           {tab === "calendar" && <CalendarView />}
           {tab === "missed" && <MissedView />}
+          {tab === "quality" && <QualityView />}
         </div>
       </div>
     </div>
@@ -44,6 +45,7 @@ function SideRail({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
     { id: "inbox", icon: Inbox, label: "Unified inbox", count: 12 },
     { id: "calendar", icon: CalendarCheck, label: "Bookings", count: 8 },
     { id: "missed", icon: PhoneMissed, label: "Missed calls", count: 3 },
+    { id: "quality", icon: ShieldCheck, label: "Quality & QA", count: 4 },
   ];
   return (
     <aside className="flex flex-col border-r border-border bg-sidebar">
