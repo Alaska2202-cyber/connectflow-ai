@@ -822,32 +822,35 @@ function BrandVoice() {
         {/* de-escalation */}
         <div className="rounded-2xl border border-border bg-background/50 p-6">
           <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
-            <HeartHandshake className="h-4 w-4" /> Difficult moment · handled
+            <HeartHandshake className="h-4 w-4" /> Live call · call-mode voice lock
           </div>
           <div className="mt-4 space-y-3">
             <div className="flex justify-start">
               <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2 text-sm">
-                This is the THIRD time my order is late. I want a full refund and I'm done.
+                This is the third time my order has been late. I want a full refund.
               </div>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1 rounded bg-destructive/15 px-1.5 py-0.5 text-destructive">
-                Sentiment 0.14 · frustrated
+              <span className="inline-flex items-center gap-1 rounded bg-primary/15 px-1.5 py-0.5 text-primary-glow">
+                Call mode · formal register
               </span>
               <span className="inline-flex items-center gap-1 rounded bg-warning/15 px-1.5 py-0.5 text-warning">
-                De-escalation mode on
+                De-escalation on
               </span>
             </div>
             <div className="flex justify-end">
               <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-gradient-primary px-3.5 py-2 text-sm text-primary-foreground shadow-glow">
-                Marco, that's on us — three times is three too many. I've refunded tonight's order in full and comped your next delivery. Want me to have the manager, Elena, call you personally in the next 10 minutes?
+                Understood, Marco. I've issued a full refund for tonight's order and credited your next delivery. A manager will call you within ten minutes to confirm.
               </div>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              28 words · 0 slang · 0 emoji · reading level: professional
             </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px]">
-            <Chip label="Acknowledged" tone="success" />
-            <Chip label="Owned the miss" tone="success" />
-            <Chip label="Offered human" tone="success" />
+            <Chip label="Concise" tone="success" />
+            <Chip label="Formal" tone="success" />
+            <Chip label="Resolution offered" tone="success" />
           </div>
         </div>
 
