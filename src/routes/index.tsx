@@ -814,40 +814,43 @@ function BrandVoice() {
     <Section id="voice" className="py-24">
       <SectionHeader
         eyebrow="Voice & de-escalation"
-        title="Warm under pressure. On-brand every time."
-        subtitle="Upload your style guide once — Relay mirrors your tone, softens hard moments, and keeps forbidden phrases out of the thread."
+        title="Concise. Formal. On-brand on every call."
+        subtitle="On live calls the agent locks to a professional register — short, formal answers, no filler, no slang — and mirrors your written style guide everywhere else."
       />
 
       <div className="mt-12 grid gap-6 lg:grid-cols-2">
         {/* de-escalation */}
         <div className="rounded-2xl border border-border bg-background/50 p-6">
           <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
-            <HeartHandshake className="h-4 w-4" /> Difficult moment · handled
+            <HeartHandshake className="h-4 w-4" /> Live call · call-mode voice lock
           </div>
           <div className="mt-4 space-y-3">
             <div className="flex justify-start">
               <div className="max-w-[85%] rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2 text-sm">
-                This is the THIRD time my order is late. I want a full refund and I'm done.
+                This is the third time my order has been late. I want a full refund.
               </div>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1 rounded bg-destructive/15 px-1.5 py-0.5 text-destructive">
-                Sentiment 0.14 · frustrated
+              <span className="inline-flex items-center gap-1 rounded bg-primary/15 px-1.5 py-0.5 text-primary-glow">
+                Call mode · formal register
               </span>
               <span className="inline-flex items-center gap-1 rounded bg-warning/15 px-1.5 py-0.5 text-warning">
-                De-escalation mode on
+                De-escalation on
               </span>
             </div>
             <div className="flex justify-end">
               <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-gradient-primary px-3.5 py-2 text-sm text-primary-foreground shadow-glow">
-                Marco, that's on us — three times is three too many. I've refunded tonight's order in full and comped your next delivery. Want me to have the manager, Elena, call you personally in the next 10 minutes?
+                Understood, Marco. I've issued a full refund for tonight's order and credited your next delivery. A manager will call you within ten minutes to confirm.
               </div>
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              28 words · 0 slang · 0 emoji · reading level: professional
             </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px]">
-            <Chip label="Acknowledged" tone="success" />
-            <Chip label="Owned the miss" tone="success" />
-            <Chip label="Offered human" tone="success" />
+            <Chip label="Concise" tone="success" />
+            <Chip label="Formal" tone="success" />
+            <Chip label="Resolution offered" tone="success" />
           </div>
         </div>
 
@@ -856,36 +859,41 @@ function BrandVoice() {
           <div className="flex items-center gap-2 text-xs font-medium text-primary-glow">
             <Palette className="h-4 w-4" /> Brand voice · Nobu
           </div>
-          <h3 className="mt-2 text-lg font-semibold">One style guide, every reply.</h3>
+          <h3 className="mt-2 text-lg font-semibold">Professional register, locked on calls.</h3>
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-lg border border-success/30 bg-success/10 p-3">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-success">On-brand</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-success">On-brand · call</div>
               <ul className="mt-1.5 space-y-1 text-foreground/90">
-                <li>"Delighted to reserve that for you."</li>
-                <li>"Our pleasure — see you Saturday."</li>
-                <li>"We'd be honored to host your party."</li>
+                <li>"Certainly — one moment."</li>
+                <li>"Understood. I'll take care of it now."</li>
+                <li>"Thank you for your patience."</li>
               </ul>
             </div>
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-destructive">Blocked</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-destructive">Blocked on calls</div>
               <ul className="mt-1.5 space-y-1 text-muted-foreground line-through">
                 <li>"No worries!"</li>
-                <li>"lol sure thing 👍"</li>
-                <li>"Cheapest option is…"</li>
+                <li>"Yeah, totally — for sure."</li>
+                <li>"Umm, let me just quickly…"</li>
               </ul>
             </div>
           </div>
 
           <div className="mt-5 rounded-xl border border-border bg-surface/60 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium">
-              <Mic2 className="h-3.5 w-3.5 text-primary-glow" /> Voice profile
+            <div className="flex items-center justify-between text-xs font-medium">
+              <span className="flex items-center gap-2">
+                <Mic2 className="h-3.5 w-3.5 text-primary-glow" /> Voice profile · call mode
+              </span>
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary-glow">
+                Locked
+              </span>
             </div>
             <div className="mt-3 space-y-3">
               {[
-                { label: "Formality", value: 78 },
-                { label: "Warmth", value: 88 },
-                { label: "Concision", value: 64 },
-                { label: "Playfulness", value: 22 },
+                { label: "Formality", value: 94 },
+                { label: "Concision", value: 92 },
+                { label: "Warmth", value: 62 },
+                { label: "Playfulness", value: 8 },
               ].map((v) => (
                 <div key={v.label} className="grid grid-cols-[110px_1fr_auto] items-center gap-3">
                   <div className="text-xs text-muted-foreground">{v.label}</div>
@@ -896,11 +904,14 @@ function BrandVoice() {
                 </div>
               ))}
             </div>
+            <div className="mt-3 text-[11px] text-muted-foreground">
+              Target reply: ≤ 30 words · no emoji · no slang · no filler words.
+            </div>
           </div>
 
           <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-success" />
-            98.6% brand-voice adherence across 12,481 replies this week.
+            99.2% register adherence across 4,120 live calls this week.
           </div>
         </div>
       </div>
