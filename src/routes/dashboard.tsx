@@ -463,6 +463,300 @@ function MissedView() {
   );
 }
 
+/* ---------- Quality & QA ---------- */
+
+type ReviewItem = {
+  id: string;
+  agent: string;
+  ticket: string;
+  reason: string;
+  brand: number;
+  qa: number;
+  status: "Pending" | "Approved" | "Coaching sent";
+};
+
+const seedReviews: ReviewItem[] = [
+  { id: "R-4821", agent: "Relay AI · Marco R.", ticket: "Refund · $184", reason: "Tone dipped mid-call", brand: 71, qa: 84, status: "Pending" },
+  { id: "R-4790", agent: "Ayesha K.", ticket: "Complaint · noise", reason: "Missed empathy step", brand: 66, qa: 74, status: "Pending" },
+  { id: "R-4772", agent: "Relay AI · Loft Events", ticket: "Reschedule", reason: "Policy citation missing", brand: 79, qa: 82, status: "Pending" },
+];
+
+const brandRules = [
+  { rule: "Warm, first-name greeting within 8s", on: true },
+  { rule: "No filler slang ('no worries', 'totally', 'yeah')", on: true },
+  { rule: "Cite policy by name on refunds & reschedules", on: true },
+  { rule: "Close with next step + ETA", on: true },
+  { rule: "Match Nobu-style cadence (short, precise, warm)", on: false },
+];
+
+const escalationSteps = [
+  { k: "Detect", d: "Sentiment < 0.35 for 2 turns OR keyword: 'furious', 'lawyer', 'refund now'" },
+  { k: "Soften", d: "Switch to empathy script · slow cadence · acknowledge feeling before facts" },
+  { k: "Guardrail", d: "Suppress upsell · disable auto-close · require human sign-off on offers > $50" },
+  { k: "Handoff", d: "Warm transfer to on-call manager with summary + CRM + suggested reply" },
+];
+
+const sampleCalls = [
+  { id: "SC-01", type: "Booking confirmation", dur: "1:42", score: 96 },
+  { id: "SC-02", type: "Refund request", dur: "4:18", score: 78 },
+  { id: "SC-03", type: "Noise complaint", dur: "6:02", score: 71 },
+  { id: "SC-04", type: "Loyalty upsell", dur: "2:51", score: 92 },
+  { id: "SC-05", type: "Allergy question", dur: "1:12", score: 99 },
+  { id: "SC-06", type: "Missed-call rescue", dur: "0:48", score: 88 },
+];
+
+function QualityView() {
+  const [reviews, setReviews] = useState<ReviewItem[]>(seedReviews);
+  const [rules, setRules] = useState(brandRules);
+  const [escalationOn, setEscalationOn] = useState(true);
+  const [qaRunning, setQaRunning] = useState(false);
+  const [qaReport, setQaReport] = useState<null | { batch: string; ran: number; avg: number; pass: number; flagged: number; at: string }>(null);
+
+  const addReview = () => {
+    const n = reviews.length + 1;
+    setReviews([
+      {
+        id: `R-49${10 + n}`,
+        agent: "Relay AI · new",
+        ticket: "Escalation · sentiment 0.22",
+        reason: "Auto-queued from live thread",
+        brand: 68 + Math.floor(Math.random() * 12),
+        qa: 70 + Math.floor(Math.random() * 15),
+        status: "Pending",
+      },
+      ...reviews,
+    ]);
+  };
+  const setStatus = (id: string, status: ReviewItem["status"]) =>
+    setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
+
+  const runQa = () => {
+    setQaRunning(true);
+    setQaReport(null);
+    setTimeout(() => {
+      const scores = sampleCalls.map((c) => c.score);
+      const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      const pass = scores.filter((s) => s >= 80).length;
+      setQaReport({
+        batch: `QA-${new Date().toISOString().slice(0, 10)}-${Math.floor(Math.random() * 900 + 100)}`,
+        ran: sampleCalls.length,
+        avg,
+        pass,
+        flagged: sampleCalls.length - pass,
+        at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      });
+      setQaRunning(false);
+    }, 1400);
+  };
+
+  return (
+    <div className="h-full overflow-y-auto p-6">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Quality & QA control room</h1>
+          <p className="text-sm text-muted-foreground">Enforce voice, de-escalate hot threads, and audit sample calls.</p>
+        </div>
+        <div className="grid grid-cols-4 gap-3 text-center">
+          <Stat label="Voice adherence" value="98.6%" />
+          <Stat label="Auto-graded" value="1,284" />
+          <Stat label="Flagged" value={`${reviews.filter((r) => r.status === "Pending").length}`} />
+          <Stat label="De-escalated" value="17" />
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        {/* Manager review queue */}
+        <QCard
+          icon={<ClipboardList className="h-4 w-4" />}
+          title="Manager review queue"
+          desc="Human sign-off on flagged AI replies and calls."
+          action={
+            <button onClick={addReview} className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90">
+              <Plus className="h-3.5 w-3.5" /> Create manager review
+            </button>
+          }
+        >
+          <div className="space-y-2">
+            {reviews.map((r) => (
+              <div key={r.id} className="rounded-lg border border-border bg-background/40 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">{r.id} · {r.ticket}</div>
+                    <div className="text-xs text-muted-foreground">{r.agent} · {r.reason}</div>
+                  </div>
+                  <StatusPill status={r.status} />
+                </div>
+                <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <Meter label="Brand" val={r.brand} />
+                  <Meter label="QA" val={r.qa} />
+                  {r.status === "Pending" && (
+                    <div className="ml-auto flex gap-1.5">
+                      <button onClick={() => setStatus(r.id, "Approved")} className="rounded-md bg-success/20 px-2 py-1 text-[11px] font-medium text-success hover:bg-success/30">Approve</button>
+                      <button onClick={() => setStatus(r.id, "Coaching sent")} className="rounded-md bg-primary/20 px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/30">Coach</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </QCard>
+
+        {/* Brand voice enforcement */}
+        <QCard
+          icon={<Mic2 className="h-4 w-4" />}
+          title="Enforce brand voice on calls"
+          desc="Rules run live on every AI turn. Violations block send."
+          action={
+            <span className="rounded-full bg-success/15 px-2 py-1 text-[11px] font-medium text-success">
+              Live · {rules.filter((r) => r.on).length}/{rules.length} rules on
+            </span>
+          }
+        >
+          <ul className="space-y-2">
+            {rules.map((r, i) => (
+              <li key={r.rule} className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-3 py-2">
+                <span className="text-sm">{r.rule}</span>
+                <button
+                  onClick={() => setRules((rs) => rs.map((x, j) => (j === i ? { ...x, on: !x.on } : x)))}
+                  className={`relative h-5 w-9 rounded-full transition ${r.on ? "bg-primary" : "bg-surface-2"}`}
+                  aria-label="toggle"
+                >
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-background transition ${r.on ? "left-4" : "left-0.5"}`} />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs">
+            <div className="font-medium text-primary-foreground">Blocked phrase caught 2m ago</div>
+            <div className="mt-1 text-muted-foreground">"No worries!" → replaced with "Of course — happy to help."</div>
+          </div>
+        </QCard>
+
+        {/* De-escalation workflow */}
+        <QCard
+          icon={<HeartHandshake className="h-4 w-4" />}
+          title="De-escalation workflow"
+          desc="Kicks in when sentiment or intent signals a hot thread."
+          action={
+            <button
+              onClick={() => setEscalationOn((v) => !v)}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+                escalationOn ? "bg-success/20 text-success" : "bg-surface-2 text-muted-foreground"
+              }`}
+            >
+              {escalationOn ? "Workflow enabled" : "Workflow paused"}
+            </button>
+          }
+        >
+          <ol className="space-y-2">
+            {escalationSteps.map((s, i) => (
+              <li key={s.k} className="flex gap-3 rounded-lg border border-border bg-background/40 p-3">
+                <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary-foreground">
+                  {i + 1}
+                </div>
+                <div>
+                  <div className="text-sm font-medium">{s.k}</div>
+                  <div className="text-xs text-muted-foreground">{s.d}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </QCard>
+
+        {/* QA sample calls */}
+        <QCard
+          icon={<PlayCircle className="h-4 w-4" />}
+          title="Run QA on sample calls"
+          desc="Grade a batch against policy, tone, resolution, and brand voice."
+          action={
+            <button
+              onClick={runQa}
+              disabled={qaRunning}
+              className="inline-flex items-center gap-1.5 rounded-md bg-gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-60"
+            >
+              {qaRunning ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Running…</> : <><PlayCircle className="h-3.5 w-3.5" /> Run QA batch</>}
+            </button>
+          }
+        >
+          <div className="mb-3 space-y-1.5">
+            {sampleCalls.map((c) => (
+              <div key={c.id} className="flex items-center justify-between rounded-md border border-border bg-background/40 px-3 py-1.5 text-xs">
+                <span className="text-muted-foreground">{c.id}</span>
+                <span className="flex-1 px-3">{c.type}</span>
+                <span className="text-muted-foreground">{c.dur}</span>
+                <span className={`ml-3 rounded px-1.5 py-0.5 font-medium ${
+                  c.score >= 90 ? "bg-success/15 text-success" :
+                  c.score >= 80 ? "bg-primary/15 text-primary-foreground" :
+                  "bg-warning/15 text-warning"
+                }`}>{c.score}</span>
+              </div>
+            ))}
+          </div>
+
+          {qaReport && (
+            <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium">
+                <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
+                QA report {qaReport.batch}
+                <span className="ml-auto text-muted-foreground">Generated {qaReport.at}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                <div className="rounded-md bg-background/40 py-2"><div className="font-semibold">{qaReport.ran}</div><div className="text-[10px] text-muted-foreground">Calls</div></div>
+                <div className="rounded-md bg-background/40 py-2"><div className="font-semibold">{qaReport.avg}</div><div className="text-[10px] text-muted-foreground">Avg score</div></div>
+                <div className="rounded-md bg-background/40 py-2"><div className="font-semibold text-success">{qaReport.pass}</div><div className="text-[10px] text-muted-foreground">Passed</div></div>
+                <div className="rounded-md bg-background/40 py-2"><div className="font-semibold text-warning">{qaReport.flagged}</div><div className="text-[10px] text-muted-foreground">Flagged</div></div>
+              </div>
+              <button className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-background/40 px-3 py-1.5 text-xs hover:bg-background/70">
+                <FileDown className="h-3.5 w-3.5" /> Download report.pdf
+              </button>
+            </div>
+          )}
+        </QCard>
+      </div>
+    </div>
+  );
+}
+
+function QCard({ icon, title, desc, action, children }: { icon: React.ReactNode; title: string; desc: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-border bg-surface/60 p-5">
+      <header className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-md bg-primary/20 text-primary-foreground">{icon}</span>
+          <div>
+            <h3 className="text-sm font-semibold">{title}</h3>
+            <p className="text-xs text-muted-foreground">{desc}</p>
+          </div>
+        </div>
+        {action}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function Meter({ label, val }: { label: string; val: number }) {
+  const tone = val >= 85 ? "bg-success" : val >= 75 ? "bg-primary" : "bg-warning";
+  return (
+    <div className="flex items-center gap-1.5">
+      <span>{label}</span>
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-2">
+        <div className={`h-full ${tone}`} style={{ width: `${val}%` }} />
+      </div>
+      <span className="font-medium text-foreground">{val}</span>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: ReviewItem["status"] }) {
+  const map = {
+    Pending: "bg-warning/15 text-warning",
+    Approved: "bg-success/15 text-success",
+    "Coaching sent": "bg-primary/15 text-primary-foreground",
+  } as const;
+  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${map[status]}`}>{status}</span>;
+}
+
 /* ---------- Small pieces ---------- */
 
 function Stat({ label, value }: { label: string; value: string }) {
