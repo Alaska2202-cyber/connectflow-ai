@@ -4,6 +4,8 @@ import {
   Inbox, CalendarCheck, PhoneMissed, Sparkles, Send, Search, Filter,
   Star, Phone, MessageSquare, Mail, AtSign, Paperclip, Smile,
   Users, TrendingUp, Clock, CheckCircle2, ChevronRight,
+  ShieldCheck, Mic2, HeartHandshake, PlayCircle, ClipboardList,
+  FileDown, Loader2, Plus,
 } from "lucide-react";
 import { Logo } from "@/components/SiteChrome";
 
