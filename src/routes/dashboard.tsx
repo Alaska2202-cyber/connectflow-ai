@@ -938,6 +938,15 @@ function QCard({ icon, title, desc, action, children }: { icon: React.ReactNode;
   );
 }
 
+function ThresholdChip({ label, val }: { label: string; val: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-md border border-border bg-background/40 px-2 py-1.5">
+      <span>{label}</span>
+      <span className="font-medium text-foreground">{val}</span>
+    </div>
+  );
+}
+
 function Meter({ label, val }: { label: string; val: number }) {
   const tone = val >= 85 ? "bg-success" : val >= 75 ? "bg-primary" : "bg-warning";
   return (
