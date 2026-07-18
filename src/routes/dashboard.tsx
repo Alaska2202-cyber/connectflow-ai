@@ -5,7 +5,7 @@ import {
   Star, Phone, MessageSquare, Mail, AtSign, Paperclip, Smile,
   Users, TrendingUp, Clock, CheckCircle2, ChevronRight,
   ShieldCheck, Mic2, HeartHandshake, PlayCircle, ClipboardList,
-  FileDown, Loader2, Plus,
+  FileDown, Loader2, Plus, Activity, CheckCircle, XCircle,
 } from "lucide-react";
 import { Logo } from "@/components/SiteChrome";
 
