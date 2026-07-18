@@ -537,6 +537,40 @@ function evalReg(c: RegCase) {
   return { pass: failures.length === 0, failures };
 }
 
+const clamp01 = (n: number) => Math.max(0, Math.min(1, Math.round(n * 100) / 100));
+
+// Prior regression runs so trend charts have context before the user runs one.
+function seedRegHistory() {
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const seeds = [
+    { d: 13, f: 0.86, c: 0.79, w: 0.34, v: 0.38 },
+    { d: 11, f: 0.87, c: 0.80, w: 0.33, v: 0.34 },
+    { d: 9,  f: 0.88, c: 0.82, w: 0.31, v: 0.29 },
+    { d: 7,  f: 0.89, c: 0.83, w: 0.30, v: 0.25 },
+    { d: 5,  f: 0.90, c: 0.85, w: 0.29, v: 0.21 },
+    { d: 3,  f: 0.91, c: 0.86, w: 0.28, v: 0.17 },
+    { d: 1,  f: 0.92, c: 0.87, w: 0.27, v: 0.13 },
+  ];
+  return seeds.map((s, i) => {
+    const ranAt = now - s.d * day;
+    const failed = Math.round(regressionSuite.length * s.v);
+    const passed = regressionSuite.length - failed;
+    return {
+      batch: `VR-${new Date(ranAt).toISOString().slice(0, 10)}-${100 + i}`,
+      at: new Date(ranAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      ranAt,
+      rows: [],
+      passed,
+      failed,
+      avgFormality: s.f,
+      avgConcision: s.c,
+      avgWarmth: s.w,
+      violationRate: Math.round(s.v * 100) / 100,
+    };
+  });
+}
+
 function QualityView() {
   const [reviews, setReviews] = useState<ReviewItem[]>(seedReviews);
   const [rules, setRules] = useState(brandRules);
@@ -584,16 +618,20 @@ function QualityView() {
   // --- Voice regression tests (formal + concise profile) ---
   const [regRunning, setRegRunning] = useState(false);
   const [regProgress, setRegProgress] = useState(0);
-  const [regResults, setRegResults] = useState<null | {
+  type RegResult = {
     batch: string;
     at: string;
+    ranAt: number;
     rows: (RegCase & { pass: boolean; failures: string[] })[];
     passed: number;
     failed: number;
     avgFormality: number;
     avgConcision: number;
     avgWarmth: number;
-  }>(null);
+    violationRate: number; // 0-1
+  };
+  const [regResults, setRegResults] = useState<RegResult | null>(null);
+  const [regHistory, setRegHistory] = useState<RegResult[]>(() => seedRegHistory());
 
   const runRegression = () => {
     setRegRunning(true);
@@ -605,20 +643,37 @@ function QualityView() {
       setRegProgress(Math.min(i, regressionSuite.length));
       if (i >= regressionSuite.length) {
         clearInterval(tick);
-        const rows = regressionSuite.map((c) => ({ ...c, ...evalReg(c) }));
+        // Add small variation per run so trend charts move.
+        const drift = () => (Math.random() - 0.5) * 0.06;
+        const rows = regressionSuite.map((c) => {
+          const jitter: RegCase = {
+            ...c,
+            formality: clamp01(c.formality + drift()),
+            concision: clamp01(c.concision + drift()),
+            warmth: clamp01(c.warmth + drift()),
+            slang: Math.random() < 0.15 ? c.slang + 1 : c.slang,
+            wpr: Math.max(10, Math.round(c.wpr + (Math.random() - 0.5) * 8)),
+          };
+          return { ...jitter, ...evalReg(jitter) };
+        });
         const passed = rows.filter((r) => r.pass).length;
         const avg = (k: keyof RegCase) =>
           Math.round((rows.reduce((a, r) => a + (r[k] as number), 0) / rows.length) * 100) / 100;
-        setRegResults({
+        const now = Date.now();
+        const next: RegResult = {
           batch: `VR-${new Date().toISOString().slice(0, 10)}-${Math.floor(Math.random() * 900 + 100)}`,
           at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          ranAt: now,
           rows,
           passed,
           failed: rows.length - passed,
           avgFormality: avg("formality"),
           avgConcision: avg("concision"),
           avgWarmth: avg("warmth"),
-        });
+          violationRate: Math.round(((rows.length - passed) / rows.length) * 100) / 100,
+        };
+        setRegResults(next);
+        setRegHistory((h) => [...h, next].slice(-20));
         setRegRunning(false);
       }
     }, 220);
@@ -638,6 +693,23 @@ function QualityView() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${regResults.batch}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadHistoryReport = () => {
+    if (regHistory.length === 0) return;
+    const cols = "batch,ran_at,cases,passed,failed,violation_rate,avg_formality,avg_concision,avg_warmth\n";
+    const body = regHistory.map((r) =>
+      [r.batch, new Date(r.ranAt).toISOString(), r.rows.length, r.passed, r.failed, r.violationRate, r.avgFormality, r.avgConcision, r.avgWarmth].join(",")
+    ).join("\n");
+    const blob = new Blob([cols + body + "\n"], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `voice-regression-history-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -913,6 +985,84 @@ function QualityView() {
                 </button>
               </div>
             )}
+
+            {/* Run history & trend charts */}
+            <div className="mt-4 rounded-lg border border-border bg-background/30 p-4">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary-glow" />
+                <h4 className="text-sm font-semibold">Run history & trends</h4>
+                <span className="text-[11px] text-muted-foreground">
+                  Last {regHistory.length} runs · trailing {regHistory.length ? `${Math.round((Date.now() - regHistory[0].ranAt) / 86400000)}d` : "0d"}
+                </span>
+                <button
+                  onClick={downloadHistoryReport}
+                  disabled={regHistory.length === 0}
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-border bg-background/50 px-2.5 py-1 text-[11px] hover:bg-background/80 disabled:opacity-50"
+                >
+                  <FileDown className="h-3 w-3" /> Export history.csv
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <TrendChart
+                  label="Avg formality"
+                  data={regHistory.map((r) => r.avgFormality)}
+                  domain={[0.7, 1]}
+                  threshold={0.85}
+                  color="hsl(var(--primary))"
+                  format={(v) => v.toFixed(2)}
+                />
+                <TrendChart
+                  label="Avg concision"
+                  data={regHistory.map((r) => r.avgConcision)}
+                  domain={[0.7, 1]}
+                  threshold={0.80}
+                  color="hsl(var(--primary-glow))"
+                  format={(v) => v.toFixed(2)}
+                />
+                <TrendChart
+                  label="Violation rate"
+                  data={regHistory.map((r) => r.violationRate)}
+                  domain={[0, 0.6]}
+                  threshold={0.15}
+                  thresholdDir="max"
+                  color="hsl(var(--destructive))"
+                  format={(v) => `${Math.round(v * 100)}%`}
+                />
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-md border border-border">
+                <table className="w-full text-xs">
+                  <thead className="bg-surface-2/60 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Batch</th>
+                      <th className="px-2 py-2 text-left">Ran</th>
+                      <th className="px-2 py-2 text-right">Passed</th>
+                      <th className="px-2 py-2 text-right">Failed</th>
+                      <th className="px-2 py-2 text-right">Violations</th>
+                      <th className="px-2 py-2 text-right">Formality</th>
+                      <th className="px-3 py-2 text-right">Concision</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...regHistory].reverse().slice(0, 8).map((r) => (
+                      <tr key={r.batch} className="border-t border-border">
+                        <td className="px-3 py-2 font-mono text-muted-foreground">{r.batch}</td>
+                        <td className="px-2 py-2">{new Date(r.ranAt).toLocaleDateString()} · {r.at}</td>
+                        <td className="px-2 py-2 text-right text-success">{r.passed}</td>
+                        <td className={`px-2 py-2 text-right ${r.failed ? "text-destructive" : ""}`}>{r.failed}</td>
+                        <td className={`px-2 py-2 text-right ${r.violationRate > 0.15 ? "text-destructive" : ""}`}>{Math.round(r.violationRate * 100)}%</td>
+                        <td className="px-2 py-2 text-right">{r.avgFormality.toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right">{r.avgConcision.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    {regHistory.length === 0 && (
+                      <tr><td colSpan={7} className="px-3 py-4 text-center text-muted-foreground">No runs yet — click "Run regression suite" above.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </QCard>
         </div>
       </div>
@@ -936,6 +1086,75 @@ function QCard({ icon, title, desc, action, children }: { icon: React.ReactNode;
       {children}
     </section>
   );
+}
+
+function TrendChart({
+  label, data, domain, threshold, thresholdDir = "min", color, format,
+}: {
+  label: string;
+  data: number[];
+  domain: [number, number];
+  threshold: number;
+  thresholdDir?: "min" | "max";
+  color: string;
+  format: (v: number) => string;
+}) {
+  const W = 220, H = 70, PAD = 6;
+  const [lo, hi] = domain;
+  const span = hi - lo || 1;
+  const n = data.length;
+  const x = (i: number) => (n <= 1 ? W / 2 : PAD + (i * (W - PAD * 2)) / (n - 1));
+  const y = (v: number) => H - PAD - ((v - lo) / span) * (H - PAD * 2);
+  const path = n === 0 ? "" : data.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(clampN(v, lo, hi)).toFixed(1)}`).join(" ");
+  const area = n === 0 ? "" : `${path} L${x(n - 1).toFixed(1)},${H - PAD} L${x(0).toFixed(1)},${H - PAD} Z`;
+  const last = data[n - 1];
+  const prev = n > 1 ? data[n - 2] : last;
+  const delta = last != null && prev != null ? last - prev : 0;
+  const good =
+    last == null ? false : thresholdDir === "min" ? last >= threshold : last <= threshold;
+  const gradId = `g-${label.replace(/\W+/g, "")}`;
+  return (
+    <div className="rounded-md border border-border bg-background/40 p-3">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className={`text-[10px] font-medium ${good ? "text-success" : "text-warning"}`}>
+          {thresholdDir === "min" ? "≥" : "≤"} {format(threshold)}
+        </span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-semibold">{last != null ? format(last) : "—"}</span>
+        {last != null && (
+          <span className={`text-[10px] font-medium ${
+            (thresholdDir === "min" ? delta >= 0 : delta <= 0) ? "text-success" : "text-destructive"
+          }`}>
+            {delta > 0 ? "▲" : delta < 0 ? "▼" : "■"} {format(Math.abs(delta))}
+          </span>
+        )}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 h-16 w-full">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <line
+          x1={PAD} x2={W - PAD}
+          y1={y(clampN(threshold, lo, hi))} y2={y(clampN(threshold, lo, hi))}
+          stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeDasharray="3 3" strokeWidth="1"
+        />
+        {area && <path d={area} fill={`url(#${gradId})`} />}
+        {path && <path d={path} fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />}
+        {data.map((v, i) => (
+          <circle key={i} cx={x(i)} cy={y(clampN(v, lo, hi))} r={i === n - 1 ? 2.5 : 1.5} fill={color} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function clampN(v: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, v));
 }
 
 function ThresholdChip({ label, val }: { label: string; val: string }) {
