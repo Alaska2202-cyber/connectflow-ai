@@ -537,6 +537,40 @@ function evalReg(c: RegCase) {
   return { pass: failures.length === 0, failures };
 }
 
+const clamp01 = (n: number) => Math.max(0, Math.min(1, Math.round(n * 100) / 100));
+
+// Prior regression runs so trend charts have context before the user runs one.
+function seedRegHistory() {
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const seeds = [
+    { d: 13, f: 0.86, c: 0.79, w: 0.34, v: 0.38 },
+    { d: 11, f: 0.87, c: 0.80, w: 0.33, v: 0.34 },
+    { d: 9,  f: 0.88, c: 0.82, w: 0.31, v: 0.29 },
+    { d: 7,  f: 0.89, c: 0.83, w: 0.30, v: 0.25 },
+    { d: 5,  f: 0.90, c: 0.85, w: 0.29, v: 0.21 },
+    { d: 3,  f: 0.91, c: 0.86, w: 0.28, v: 0.17 },
+    { d: 1,  f: 0.92, c: 0.87, w: 0.27, v: 0.13 },
+  ];
+  return seeds.map((s, i) => {
+    const ranAt = now - s.d * day;
+    const failed = Math.round(regressionSuite.length * s.v);
+    const passed = regressionSuite.length - failed;
+    return {
+      batch: `VR-${new Date(ranAt).toISOString().slice(0, 10)}-${100 + i}`,
+      at: new Date(ranAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      ranAt,
+      rows: [],
+      passed,
+      failed,
+      avgFormality: s.f,
+      avgConcision: s.c,
+      avgWarmth: s.w,
+      violationRate: Math.round(s.v * 100) / 100,
+    };
+  });
+}
+
 function QualityView() {
   const [reviews, setReviews] = useState<ReviewItem[]>(seedReviews);
   const [rules, setRules] = useState(brandRules);
