@@ -581,6 +581,69 @@ function QualityView() {
     }, 1400);
   };
 
+  // --- Voice regression tests (formal + concise profile) ---
+  const [regRunning, setRegRunning] = useState(false);
+  const [regProgress, setRegProgress] = useState(0);
+  const [regResults, setRegResults] = useState<null | {
+    batch: string;
+    at: string;
+    rows: (RegCase & { pass: boolean; failures: string[] })[];
+    passed: number;
+    failed: number;
+    avgFormality: number;
+    avgConcision: number;
+    avgWarmth: number;
+  }>(null);
+
+  const runRegression = () => {
+    setRegRunning(true);
+    setRegResults(null);
+    setRegProgress(0);
+    let i = 0;
+    const tick = setInterval(() => {
+      i += 1;
+      setRegProgress(Math.min(i, regressionSuite.length));
+      if (i >= regressionSuite.length) {
+        clearInterval(tick);
+        const rows = regressionSuite.map((c) => ({ ...c, ...evalReg(c) }));
+        const passed = rows.filter((r) => r.pass).length;
+        const avg = (k: keyof RegCase) =>
+          Math.round((rows.reduce((a, r) => a + (r[k] as number), 0) / rows.length) * 100) / 100;
+        setRegResults({
+          batch: `VR-${new Date().toISOString().slice(0, 10)}-${Math.floor(Math.random() * 900 + 100)}`,
+          at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          rows,
+          passed,
+          failed: rows.length - passed,
+          avgFormality: avg("formality"),
+          avgConcision: avg("concision"),
+          avgWarmth: avg("warmth"),
+        });
+        setRegRunning(false);
+      }
+    }, 220);
+  };
+
+  const downloadRegReport = () => {
+    if (!regResults) return;
+    const header = "batch,generated_at,profile,thresholds\n" +
+      `${regResults.batch},${new Date().toISOString()},Call mode · Formal + Concise (locked),"formality>=0.85; concision>=0.80; warmth<=0.35; slang=0; wpr<=45"\n\n`;
+    const summary = `summary,cases,${regressionSuite.length},passed,${regResults.passed},failed,${regResults.failed},avg_formality,${regResults.avgFormality},avg_concision,${regResults.avgConcision},avg_warmth,${regResults.avgWarmth}\n\n`;
+    const cols = "id,scenario,formality,concision,warmth,blocked_slang,words_per_reply,result,failures\n";
+    const body = regResults.rows.map((r) =>
+      [r.id, r.scenario, r.formality, r.concision, r.warmth, r.slang, r.wpr, r.pass ? "PASS" : "FAIL", r.failures.join("|")].join(",")
+    ).join("\n");
+    const blob = new Blob([header + summary + cols + body + "\n"], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${regResults.batch}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="h-full overflow-y-auto p-6">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
