@@ -1088,6 +1088,75 @@ function QCard({ icon, title, desc, action, children }: { icon: React.ReactNode;
   );
 }
 
+function TrendChart({
+  label, data, domain, threshold, thresholdDir = "min", color, format,
+}: {
+  label: string;
+  data: number[];
+  domain: [number, number];
+  threshold: number;
+  thresholdDir?: "min" | "max";
+  color: string;
+  format: (v: number) => string;
+}) {
+  const W = 220, H = 70, PAD = 6;
+  const [lo, hi] = domain;
+  const span = hi - lo || 1;
+  const n = data.length;
+  const x = (i: number) => (n <= 1 ? W / 2 : PAD + (i * (W - PAD * 2)) / (n - 1));
+  const y = (v: number) => H - PAD - ((v - lo) / span) * (H - PAD * 2);
+  const path = n === 0 ? "" : data.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(clampN(v, lo, hi)).toFixed(1)}`).join(" ");
+  const area = n === 0 ? "" : `${path} L${x(n - 1).toFixed(1)},${H - PAD} L${x(0).toFixed(1)},${H - PAD} Z`;
+  const last = data[n - 1];
+  const prev = n > 1 ? data[n - 2] : last;
+  const delta = last != null && prev != null ? last - prev : 0;
+  const good =
+    last == null ? false : thresholdDir === "min" ? last >= threshold : last <= threshold;
+  const gradId = `g-${label.replace(/\W+/g, "")}`;
+  return (
+    <div className="rounded-md border border-border bg-background/40 p-3">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className={`text-[10px] font-medium ${good ? "text-success" : "text-warning"}`}>
+          {thresholdDir === "min" ? "≥" : "≤"} {format(threshold)}
+        </span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-lg font-semibold">{last != null ? format(last) : "—"}</span>
+        {last != null && (
+          <span className={`text-[10px] font-medium ${
+            (thresholdDir === "min" ? delta >= 0 : delta <= 0) ? "text-success" : "text-destructive"
+          }`}>
+            {delta > 0 ? "▲" : delta < 0 ? "▼" : "■"} {format(Math.abs(delta))}
+          </span>
+        )}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-1 h-16 w-full">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <line
+          x1={PAD} x2={W - PAD}
+          y1={y(clampN(threshold, lo, hi))} y2={y(clampN(threshold, lo, hi))}
+          stroke="hsl(var(--muted-foreground))" strokeOpacity="0.35" strokeDasharray="3 3" strokeWidth="1"
+        />
+        {area && <path d={area} fill={`url(#${gradId})`} />}
+        {path && <path d={path} fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />}
+        {data.map((v, i) => (
+          <circle key={i} cx={x(i)} cy={y(clampN(v, lo, hi))} r={i === n - 1 ? 2.5 : 1.5} fill={color} />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function clampN(v: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
 function ThresholdChip({ label, val }: { label: string; val: string }) {
   return (
     <div className="flex items-center justify-between rounded-md border border-border bg-background/40 px-2 py-1.5">
