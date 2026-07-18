@@ -584,16 +584,20 @@ function QualityView() {
   // --- Voice regression tests (formal + concise profile) ---
   const [regRunning, setRegRunning] = useState(false);
   const [regProgress, setRegProgress] = useState(0);
-  const [regResults, setRegResults] = useState<null | {
+  type RegResult = {
     batch: string;
     at: string;
+    ranAt: number;
     rows: (RegCase & { pass: boolean; failures: string[] })[];
     passed: number;
     failed: number;
     avgFormality: number;
     avgConcision: number;
     avgWarmth: number;
-  }>(null);
+    violationRate: number; // 0-1
+  };
+  const [regResults, setRegResults] = useState<RegResult | null>(null);
+  const [regHistory, setRegHistory] = useState<RegResult[]>(() => seedRegHistory());
 
   const runRegression = () => {
     setRegRunning(true);
@@ -605,20 +609,37 @@ function QualityView() {
       setRegProgress(Math.min(i, regressionSuite.length));
       if (i >= regressionSuite.length) {
         clearInterval(tick);
-        const rows = regressionSuite.map((c) => ({ ...c, ...evalReg(c) }));
+        // Add small variation per run so trend charts move.
+        const drift = () => (Math.random() - 0.5) * 0.06;
+        const rows = regressionSuite.map((c) => {
+          const jitter: RegCase = {
+            ...c,
+            formality: clamp01(c.formality + drift()),
+            concision: clamp01(c.concision + drift()),
+            warmth: clamp01(c.warmth + drift()),
+            slang: Math.random() < 0.15 ? c.slang + 1 : c.slang,
+            wpr: Math.max(10, Math.round(c.wpr + (Math.random() - 0.5) * 8)),
+          };
+          return { ...jitter, ...evalReg(jitter) };
+        });
         const passed = rows.filter((r) => r.pass).length;
         const avg = (k: keyof RegCase) =>
           Math.round((rows.reduce((a, r) => a + (r[k] as number), 0) / rows.length) * 100) / 100;
-        setRegResults({
+        const now = Date.now();
+        const next: RegResult = {
           batch: `VR-${new Date().toISOString().slice(0, 10)}-${Math.floor(Math.random() * 900 + 100)}`,
           at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          ranAt: now,
           rows,
           passed,
           failed: rows.length - passed,
           avgFormality: avg("formality"),
           avgConcision: avg("concision"),
           avgWarmth: avg("warmth"),
-        });
+          violationRate: Math.round(((rows.length - passed) / rows.length) * 100) / 100,
+        };
+        setRegResults(next);
+        setRegHistory((h) => [...h, next].slice(-20));
         setRegRunning(false);
       }
     }, 220);
@@ -638,6 +659,23 @@ function QualityView() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${regResults.batch}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadHistoryReport = () => {
+    if (regHistory.length === 0) return;
+    const cols = "batch,ran_at,cases,passed,failed,violation_rate,avg_formality,avg_concision,avg_warmth\n";
+    const body = regHistory.map((r) =>
+      [r.batch, new Date(r.ranAt).toISOString(), r.rows.length, r.passed, r.failed, r.violationRate, r.avgFormality, r.avgConcision, r.avgWarmth].join(",")
+    ).join("\n");
+    const blob = new Blob([cols + body + "\n"], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `voice-regression-history-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
