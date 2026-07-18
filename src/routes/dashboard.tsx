@@ -807,6 +807,114 @@ function QualityView() {
             </div>
           )}
         </QCard>
+
+        {/* Voice regression tests */}
+        <div className="xl:col-span-2">
+          <QCard
+            icon={<Activity className="h-4 w-4" />}
+            title="Automated voice regression tests"
+            desc="Replays sample calls against the locked Formal + Concise profile. Fails on warmth drift, slang, or verbosity."
+            action={
+              <div className="flex items-center gap-2">
+                <span className="hidden rounded-full bg-surface-2 px-2 py-1 text-[11px] text-muted-foreground sm:inline">
+                  Profile: <span className="font-medium text-foreground">Call · Formal + Concise</span> (locked)
+                </span>
+                <button
+                  onClick={runRegression}
+                  disabled={regRunning}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow hover:opacity-90 disabled:opacity-60"
+                >
+                  {regRunning ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Running {regProgress}/{regressionSuite.length}</> : <><PlayCircle className="h-3.5 w-3.5" /> Run regression suite</>}
+                </button>
+              </div>
+            }
+          >
+            <div className="mb-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground md:grid-cols-5">
+              <ThresholdChip label="Formality" val="≥ 0.85" />
+              <ThresholdChip label="Concision" val="≥ 0.80" />
+              <ThresholdChip label="Warmth" val="≤ 0.35" />
+              <ThresholdChip label="Blocked slang" val="= 0" />
+              <ThresholdChip label="Words / reply" val="≤ 45" />
+            </div>
+
+            {regRunning && (
+              <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                <div className="h-full bg-gradient-primary transition-all" style={{ width: `${(regProgress / regressionSuite.length) * 100}%` }} />
+              </div>
+            )}
+
+            <div className="overflow-hidden rounded-lg border border-border">
+              <table className="w-full text-xs">
+                <thead className="bg-surface-2/60 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Case</th>
+                    <th className="px-2 py-2 text-left">Scenario</th>
+                    <th className="px-2 py-2 text-right">Form.</th>
+                    <th className="px-2 py-2 text-right">Conc.</th>
+                    <th className="px-2 py-2 text-right">Warm.</th>
+                    <th className="px-2 py-2 text-right">Slang</th>
+                    <th className="px-2 py-2 text-right">W/R</th>
+                    <th className="px-3 py-2 text-right">Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(regResults?.rows ?? regressionSuite.map((c) => ({ ...c, pass: false, failures: [] as string[] }))).map((r, idx) => {
+                    const shown = regResults ? true : idx < regProgress;
+                    return (
+                      <tr key={r.id} className={`border-t border-border ${shown ? "" : "opacity-40"}`}>
+                        <td className="px-3 py-2 font-mono text-muted-foreground">{r.id}</td>
+                        <td className="px-2 py-2">{r.scenario}</td>
+                        <td className={`px-2 py-2 text-right ${r.formality < 0.85 ? "text-warning" : ""}`}>{r.formality.toFixed(2)}</td>
+                        <td className={`px-2 py-2 text-right ${r.concision < 0.80 ? "text-warning" : ""}`}>{r.concision.toFixed(2)}</td>
+                        <td className={`px-2 py-2 text-right ${r.warmth > 0.35 ? "text-warning" : ""}`}>{r.warmth.toFixed(2)}</td>
+                        <td className={`px-2 py-2 text-right ${r.slang > 0 ? "text-destructive" : ""}`}>{r.slang}</td>
+                        <td className={`px-2 py-2 text-right ${r.wpr > 45 ? "text-warning" : ""}`}>{r.wpr}</td>
+                        <td className="px-3 py-2 text-right">
+                          {shown && regResults ? (
+                            r.pass ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 font-medium text-success">
+                                <CheckCircle className="h-3 w-3" /> Pass
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2 py-0.5 font-medium text-destructive">
+                                <XCircle className="h-3 w-3" /> Fail
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {regResults && (
+              <div className="mt-3 rounded-lg border border-primary/30 bg-primary/10 p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium">
+                  <Sparkles className="h-3.5 w-3.5 text-primary-glow" />
+                  Regression report {regResults.batch}
+                  <span className="ml-auto text-muted-foreground">Generated {regResults.at}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-center text-xs md:grid-cols-5">
+                  <div className="rounded-md bg-background/40 py-2"><div className="font-semibold">{regressionSuite.length}</div><div className="text-[10px] text-muted-foreground">Cases</div></div>
+                  <div className="rounded-md bg-background/40 py-2"><div className="font-semibold text-success">{regResults.passed}</div><div className="text-[10px] text-muted-foreground">Passed</div></div>
+                  <div className="rounded-md bg-background/40 py-2"><div className={`font-semibold ${regResults.failed ? "text-destructive" : ""}`}>{regResults.failed}</div><div className="text-[10px] text-muted-foreground">Failed</div></div>
+                  <div className="rounded-md bg-background/40 py-2"><div className="font-semibold">{regResults.avgFormality.toFixed(2)}</div><div className="text-[10px] text-muted-foreground">Avg formality</div></div>
+                  <div className="rounded-md bg-background/40 py-2"><div className="font-semibold">{regResults.avgConcision.toFixed(2)}</div><div className="text-[10px] text-muted-foreground">Avg concision</div></div>
+                </div>
+                <button
+                  onClick={downloadRegReport}
+                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-background/40 px-3 py-1.5 text-xs hover:bg-background/70"
+                >
+                  <FileDown className="h-3.5 w-3.5" /> Download {regResults.batch}.csv
+                </button>
+              </div>
+            )}
+          </QCard>
+        </div>
       </div>
     </div>
   );
