@@ -505,6 +505,38 @@ const sampleCalls = [
   { id: "SC-06", type: "Missed-call rescue", dur: "0:48", score: 88 },
 ];
 
+// Voice regression suite — locks the on-call profile to formal + concise.
+// Thresholds: formality ≥ 0.85, concision ≥ 0.80, warmth ≤ 0.35, no blocked slang.
+type RegCase = {
+  id: string;
+  scenario: string;
+  formality: number;   // 0-1, higher = more formal
+  concision: number;   // 0-1, higher = tighter
+  warmth: number;      // 0-1, must stay low on calls
+  slang: number;       // count of blocked phrases
+  wpr: number;         // words per reply (target < 45)
+};
+const regressionSuite: RegCase[] = [
+  { id: "VR-01", scenario: "Booking confirmation",  formality: 0.94, concision: 0.91, warmth: 0.22, slang: 0, wpr: 28 },
+  { id: "VR-02", scenario: "Refund request",        formality: 0.89, concision: 0.83, warmth: 0.28, slang: 0, wpr: 41 },
+  { id: "VR-03", scenario: "Noise complaint",       formality: 0.82, concision: 0.74, warmth: 0.41, slang: 1, wpr: 58 },
+  { id: "VR-04", scenario: "Loyalty upsell",        formality: 0.91, concision: 0.86, warmth: 0.30, slang: 0, wpr: 34 },
+  { id: "VR-05", scenario: "Allergy question",      formality: 0.96, concision: 0.94, warmth: 0.19, slang: 0, wpr: 22 },
+  { id: "VR-06", scenario: "Missed-call rescue",    formality: 0.88, concision: 0.90, warmth: 0.24, slang: 0, wpr: 19 },
+  { id: "VR-07", scenario: "Reschedule + policy",   formality: 0.87, concision: 0.81, warmth: 0.26, slang: 0, wpr: 39 },
+  { id: "VR-08", scenario: "VIP arrival",           formality: 0.93, concision: 0.88, warmth: 0.31, slang: 0, wpr: 31 },
+];
+
+function evalReg(c: RegCase) {
+  const failures: string[] = [];
+  if (c.formality < 0.85) failures.push("formality");
+  if (c.concision < 0.80) failures.push("concision");
+  if (c.warmth > 0.35) failures.push("warmth-over");
+  if (c.slang > 0) failures.push("slang");
+  if (c.wpr > 45) failures.push("verbose");
+  return { pass: failures.length === 0, failures };
+}
+
 function QualityView() {
   const [reviews, setReviews] = useState<ReviewItem[]>(seedReviews);
   const [rules, setRules] = useState(brandRules);
