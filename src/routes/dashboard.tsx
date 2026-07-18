@@ -985,6 +985,84 @@ function QualityView() {
                 </button>
               </div>
             )}
+
+            {/* Run history & trend charts */}
+            <div className="mt-4 rounded-lg border border-border bg-background/30 p-4">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary-glow" />
+                <h4 className="text-sm font-semibold">Run history & trends</h4>
+                <span className="text-[11px] text-muted-foreground">
+                  Last {regHistory.length} runs · trailing {regHistory.length ? `${Math.round((Date.now() - regHistory[0].ranAt) / 86400000)}d` : "0d"}
+                </span>
+                <button
+                  onClick={downloadHistoryReport}
+                  disabled={regHistory.length === 0}
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-border bg-background/50 px-2.5 py-1 text-[11px] hover:bg-background/80 disabled:opacity-50"
+                >
+                  <FileDown className="h-3 w-3" /> Export history.csv
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <TrendChart
+                  label="Avg formality"
+                  data={regHistory.map((r) => r.avgFormality)}
+                  domain={[0.7, 1]}
+                  threshold={0.85}
+                  color="hsl(var(--primary))"
+                  format={(v) => v.toFixed(2)}
+                />
+                <TrendChart
+                  label="Avg concision"
+                  data={regHistory.map((r) => r.avgConcision)}
+                  domain={[0.7, 1]}
+                  threshold={0.80}
+                  color="hsl(var(--primary-glow))"
+                  format={(v) => v.toFixed(2)}
+                />
+                <TrendChart
+                  label="Violation rate"
+                  data={regHistory.map((r) => r.violationRate)}
+                  domain={[0, 0.6]}
+                  threshold={0.15}
+                  thresholdDir="max"
+                  color="hsl(var(--destructive))"
+                  format={(v) => `${Math.round(v * 100)}%`}
+                />
+              </div>
+
+              <div className="mt-4 overflow-hidden rounded-md border border-border">
+                <table className="w-full text-xs">
+                  <thead className="bg-surface-2/60 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Batch</th>
+                      <th className="px-2 py-2 text-left">Ran</th>
+                      <th className="px-2 py-2 text-right">Passed</th>
+                      <th className="px-2 py-2 text-right">Failed</th>
+                      <th className="px-2 py-2 text-right">Violations</th>
+                      <th className="px-2 py-2 text-right">Formality</th>
+                      <th className="px-3 py-2 text-right">Concision</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...regHistory].reverse().slice(0, 8).map((r) => (
+                      <tr key={r.batch} className="border-t border-border">
+                        <td className="px-3 py-2 font-mono text-muted-foreground">{r.batch}</td>
+                        <td className="px-2 py-2">{new Date(r.ranAt).toLocaleDateString()} · {r.at}</td>
+                        <td className="px-2 py-2 text-right text-success">{r.passed}</td>
+                        <td className={`px-2 py-2 text-right ${r.failed ? "text-destructive" : ""}`}>{r.failed}</td>
+                        <td className={`px-2 py-2 text-right ${r.violationRate > 0.15 ? "text-destructive" : ""}`}>{Math.round(r.violationRate * 100)}%</td>
+                        <td className="px-2 py-2 text-right">{r.avgFormality.toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right">{r.avgConcision.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    {regHistory.length === 0 && (
+                      <tr><td colSpan={7} className="px-3 py-4 text-center text-muted-foreground">No runs yet — click "Run regression suite" above.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </QCard>
         </div>
       </div>
